@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PriceScout — Find the Best Deal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0d0d0d; color: #fff; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+
+        /* ── Navbar ── */
+        .navbar { background: rgba(10,10,10,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #1a1a1a; padding: 15px 0; position: sticky; top: 0; z-index: 1000; }
+        .navbar-brand { font-size: 1.9rem; font-weight: 900; letter-spacing: -1px; }
+        .navbar-brand .price { color: #00f5a0; }
+        .navbar-brand .scout { color: #ffffff; }
+        .navbar-brand .dot { color: #00f5a0; }
+        .nav-link { color: #aaa !important; font-size: 0.9rem; margin: 0 10px; transition: color 0.2s; }
+        .nav-link:hover { color: #00f5a0 !important; }
+        .nav-badge { background: #00f5a0; color: #000; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+
+        /* ── Hero ── */
+        .hero { background: radial-gradient(ellipse at 50% 0%, rgba(0,245,160,0.12) 0%, transparent 70%), #0d0d0d; padding: 80px 0 60px; text-align: center; }
+        .hero-tag { background: rgba(0,245,160,0.1); border: 1px solid rgba(0,245,160,0.3); color: #00f5a0; padding: 6px 18px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; display: inline-block; margin-bottom: 25px; letter-spacing: 1px; }
+        .hero h1 { font-size: 3.8rem; font-weight: 900; line-height: 1.1; margin-bottom: 15px; }
+        .hero h1 .highlight { background: linear-gradient(135deg, #00f5a0, #00d4ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { color: #888; font-size: 1.1rem; margin-bottom: 40px; }
+
+        /* ── Search Box ── */
+        .search-container { max-width: 700px; margin: 0 auto; position: relative; }
+        .search-box { background: #1a1a1a; border: 2px solid #2a2a2a; border-radius: 50px; padding: 8px 8px 8px 25px; display: flex; align-items: center; transition: all 0.3s; }
+        .search-box:focus-within { border-color: #00f5a0; box-shadow: 0 0 30px rgba(0,245,160,0.15); }
+        .search-box input { background: none; border: none; color: #fff; font-size: 1.05rem; flex: 1; padding: 8px 0; }
+        .search-box input:focus { outline: none; }
+        .search-box input::placeholder { color: #555; }
+        .btn-scout { background: linear-gradient(135deg, #00f5a0, #00d4ff); color: #000; border: none; border-radius: 40px; padding: 12px 30px; font-weight: 800; font-size: 1rem; transition: all 0.3s; white-space: nowrap; }
+        .btn-scout:hover { transform: scale(1.05); box-shadow: 0 5px 20px rgba(0,245,160,0.4); }
+        .search-suggestions { display: flex; gap: 10px; justify-content: center; margin-top: 15px; flex-wrap: wrap; }
+        .suggestion-chip { background: #1a1a1a; border: 1px solid #2a2a2a; color: #888; padding: 5px 15px; border-radius: 20px; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; text-decoration: none; }
+        .suggestion-chip:hover { border-color: #00f5a0; color: #00f5a0; }
+
+        /* ── Stats Bar ── */
+        .stats-bar { background: #111; border-top: 1px solid #1a1a1a; border-bottom: 1px solid #1a1a1a; padding: 20px 0; }
+        .stat-item { text-align: center; }
+        .stat-number { font-size: 1.8rem; font-weight: 900; color: #00f5a0; }
+        .stat-label { color: #555; font-size: 0.8rem; margin-top: 3px; }
+
+        /* ── Store Pills ── */
+        .store-pills { display: flex; gap: 10px; justify-content: center; margin: 30px 0 10px; flex-wrap: wrap; }
+        .store-pill { padding: 6px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 2px solid; }
+        .store-pill.electrostore { border-color: #00d4ff; color: #00d4ff; background: rgba(0,212,255,0.08); }
+        .store-pill.quickshop { border-color: #2874f0; color: #2874f0; background: rgba(40,116,240,0.08); }
+        .store-pill.gadgethub { border-color: #ff9900; color: #ff9900; background: rgba(255,153,0,0.08); }
+
+        /* ── Results Section ── */
+        .results-section { padding: 40px 0; }
+        .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; }
+        .results-title { font-size: 1.3rem; font-weight: 700; }
+        .results-title span { color: #00f5a0; }
+        .results-count { color: #555; font-size: 0.9rem; }
+
+        /* ── Product Comparison Card ── */
+        .product-card { background: #111; border: 1px solid #1e1e1e; border-radius: 20px; overflow: hidden; margin-bottom: 25px; transition: all 0.3s; }
+        .product-card:hover { border-color: #00f5a0; box-shadow: 0 10px 40px rgba(0,245,160,0.08); transform: translateY(-2px); }
+        .product-card.best-deal-card { border-color: #00f5a0; box-shadow: 0 0 30px rgba(0,245,160,0.1); }
+
+        .card-header-custom { background: #161616; padding: 20px 25px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1e1e1e; }
+        .product-icon { width: 55px; height: 55px; background: #1e1e1e; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #00f5a0; margin-right: 15px; }
+        .product-info h3 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+        .product-info .meta { color: #555; font-size: 0.82rem; margin-top: 3px; }
+        .best-deal-badge { background: linear-gradient(135deg, #00f5a0, #00d4ff); color: #000; padding: 4px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 800; }
+        .rating-stars { color: #ffd700; font-size: 0.85rem; }
+
+        /* ── Price Comparison Table ── */
+        .price-table { padding: 25px; }
+        .store-row { display: flex; align-items: center; padding: 15px 20px; border-radius: 12px; margin-bottom: 10px; border: 2px solid transparent; transition: all 0.3s; }
+        .store-row.best { background: rgba(0,245,160,0.06); border-color: rgba(0,245,160,0.2); }
+        .store-row.electrostore-row { background: rgba(0,212,255,0.03); }
+        .store-row.quickshop-row { background: rgba(40,116,240,0.03); }
+        .store-row.gadgethub-row { background: rgba(255,153,0,0.03); }
+        .store-logo { width: 120px; font-weight: 700; font-size: 0.95rem; }
+        .store-logo.electrostore { color: #00d4ff; }
+        .store-logo.quickshop { color: #2874f0; }
+        .store-logo.gadgethub { color: #ff9900; }
+        .store-price { font-size: 1.5rem; font-weight: 900; flex: 1; }
+        .store-price.best-price { color: #00f5a0; }
+        .store-price.not-best { color: #555; }
+        .store-offer { flex: 2; font-size: 0.82rem; color: #555; }
+        .store-offer .offer-chip { background: #1e1e1e; padding: 3px 10px; border-radius: 10px; display: inline-block; }
+        .store-stock { font-size: 0.8rem; }
+        .stock-in { color: #00f5a0; }
+        .stock-out { color: #ff4444; }
+        .stock-low { color: #ff9900; }
+        .best-tag { background: #00f5a0; color: #000; padding: 2px 10px; border-radius: 10px; font-size: 0.72rem; font-weight: 800; margin-left: 10px; }
+        .savings-bar { background: #161616; padding: 15px 25px; border-top: 1px solid #1e1e1e; display: flex; align-items: center; justify-content: space-between; }
+        .savings-text { color: #555; font-size: 0.85rem; }
+        .savings-amount { color: #00f5a0; font-weight: 700; }
+        .btn-visit { background: linear-gradient(135deg, #00f5a0, #00d4ff); color: #000; border: none; padding: 8px 20px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; text-decoration: none; transition: all 0.2s; }
+        .btn-visit:hover { transform: scale(1.05); color: #000; }
+
+        /* ── No results / Error ── */
+        .empty-state { text-align: center; padding: 80px 20px; }
+        .empty-icon { font-size: 4rem; color: #222; margin-bottom: 20px; }
+        .empty-state h3 { color: #444; font-size: 1.3rem; }
+        .empty-state p { color: #333; }
+
+        /* ── History Section ── */
+        .history-section { padding: 40px 0; }
+        .history-card { background: #111; border: 1px solid #1e1e1e; border-radius: 12px; padding: 15px 20px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s; }
+        .history-card:hover { border-color: #00f5a0; }
+        .history-query { font-weight: 600; color: #fff; }
+        .history-meta { color: #555; font-size: 0.82rem; margin-top: 3px; }
+        .history-best { color: #00f5a0; font-weight: 700; font-size: 0.9rem; }
+
+        /* ── How it works ── */
+        .how-section { padding: 60px 0; background: #111; border-top: 1px solid #1a1a1a; }
+        .step-card { background: #161616; border: 1px solid #1e1e1e; border-radius: 16px; padding: 30px 25px; text-align: center; height: 100%; }
+        .step-number { width: 50px; height: 50px; background: linear-gradient(135deg, #00f5a0, #00d4ff); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000; font-size: 1.2rem; margin: 0 auto 15px; }
+        .step-card h5 { color: #fff; font-weight: 700; margin-bottom: 8px; }
+        .step-card p { color: #555; font-size: 0.88rem; }
+
+        /* ── Footer ── */
+        footer { background: #080808; border-top: 1px solid #1a1a1a; padding: 30px 0; text-align: center; color: #333; }
+        footer span { color: #00f5a0; }
+        .store-links a { color: #555; margin: 0 10px; font-size: 0.85rem; text-decoration: none; transition: color 0.2s; }
+        .store-links a:hover { color: #00f5a0; }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <span class="price">Price</span><span class="scout">Scout</span><span class="dot">.</span>
+        </a>
+        <div class="d-flex align-items-center gap-4 ms-auto">
+            <a class="nav-link" href="/"><i class="fas fa-home"></i> Home</a>
+            <a class="nav-link" href="/history"><i class="fas fa-history"></i> History</a>
+            <a class="nav-link" href="http://localhost:8081" target="_blank"><span style="color:#00d4ff">ElectroStore</span></a>
+            <a class="nav-link" href="http://localhost:8082" target="_blank"><span style="color:#2874f0">QuickShop</span></a>
+            <a class="nav-link" href="http://localhost:8083" target="_blank"><span style="color:#ff9900">GadgetHub</span></a>
+            <span class="nav-badge">LIVE</span>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+    <div class="container">
+        <div class="hero-tag"><i class="fas fa-bolt"></i> &nbsp;REAL-TIME PRICE COMPARISON</div>
+        <h1>Stop Overpaying.<br>Start <span class="highlight">Scouting.</span></h1>
+        <p>We compare prices across ElectroStore, QuickShop & GadgetHub<br>so you always get the best deal — instantly.</p>
+
+        <!-- Search -->
+        <form action="/search" method="GET">
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search" style="color:#555; margin-right:10px;"></i>
+                    <input type="text" name="q" placeholder="Search for iPhone, MacBook, Samsung TV..." value="{{ query or '' }}" autofocus>
+                    <button type="submit" class="btn-scout"><i class="fas fa-crosshairs"></i> Scout Deals</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="search-suggestions mt-3">
+            <span style="color:#555; font-size:0.85rem;">Try:</span>
+            <a href="/search?q=iPhone" class="suggestion-chip">iPhone 15</a>
+            <a href="/search?q=MacBook" class="suggestion-chip">MacBook Air</a>
+            <a href="/search?q=Samsung" class="suggestion-chip">Samsung TV</a>
+            <a href="/search?q=Daikin" class="suggestion-chip">Daikin AC</a>
+            <a href="/search?q=Dell" class="suggestion-chip">Dell XPS</a>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Bar -->
+<div class="stats-bar">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 stat-item">
+                <div class="stat-number">3</div>
+                <div class="stat-label">Stores Compared</div>
+            </div>
+            <div class="col-md-3 stat-item">
+                <div class="stat-number">12</div>
+                <div class="stat-label">Products Tracked</div>
+            </div>
+            <div class="col-md-3 stat-item">
+                <div class="stat-number">Live</div>
+                <div class="stat-label">Price Updates</div>
+            </div>
+            <div class="col-md-3 stat-item">
+                <div class="stat-number">₹0</div>
+                <div class="stat-label">Free to Use</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error State -->
+{% if error %}
+<div class="container mt-5">
+    <div class="empty-state">
+        <div class="empty-icon"><i class="fas fa-search"></i></div>
+        <h3>{{ error }}</h3>
+        <p>Try searching for iPhone, Samsung, MacBook, AC or TV</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- Search Results -->
+{% if products %}
+<div class="results-section">
+    <div class="container">
+        <div class="results-header">
+            <div class="results-title">Results for <span>"{{ query }}"</span></div>
+            <div class="results-count">{{ products|length }} product(s) found across 3 stores</div>
+        </div>
+
+        <!-- Store Legend -->
+        <div class="store-pills">
+            <div class="store-pill electrostore"><i class="fas fa-circle" style="font-size:0.5rem"></i> ElectroStore</div>
+            <div class="store-pill quickshop"><i class="fas fa-circle" style="font-size:0.5rem"></i> QuickShop</div>
+            <div class="store-pill gadgethub"><i class="fas fa-circle" style="font-size:0.5rem"></i> GadgetHub</div>
+        </div>
+
+        {% for product in products %}
+        <div class="product-card {% if loop.first %}best-deal-card{% endif %}">
+
+            <!-- Card Header -->
+            <div class="card-header-custom">
+                <div class="d-flex align-items-center">
+                    <div class="product-icon">
+                        {% if product.category == 'Mobile' %}<i class="fas fa-mobile-alt"></i>
+                        {% elif product.category == 'Laptop' %}<i class="fas fa-laptop"></i>
+                        {% elif product.category == 'AC' %}<i class="fas fa-snowflake"></i>
+                        {% elif product.category == 'TV' %}<i class="fas fa-tv"></i>
+                        {% else %}<i class="fas fa-box"></i>{% endif %}
+                    </div>
+                    <div class="product-info">
+                        <h3>{{ product.name }}</h3>
+                        <div class="meta">
+                            {{ product.brand }} &nbsp;·&nbsp; {{ product.category }}
+                            &nbsp;·&nbsp;
+                            <span class="rating-stars">
+                                {% for i in range(product.rating | int) %}<i class="fas fa-star"></i>{% endfor %}
+                            </span>
+                            {{ product.rating }}
+                        </div>
+                    </div>
+                </div>
+                {% if loop.first %}
+                <div class="best-deal-badge"><i class="fas fa-trophy"></i> Best Match</div>
+                {% endif %}
+            </div>
+
+            <!-- Price Table -->
+            <div class="price-table">
+                {% for store in ['ElectroStore', 'QuickShop', 'GadgetHub'] %}
+                {% set price = product.store_prices.get(store) %}
+                {% set store_data = product.store_data.get(store) %}
+                {% set is_best = (store == product.best_store) %}
+
+                <div class="store-row {% if is_best %}best{% endif %} {{ store.lower() }}-row">
+                    <div class="store-logo {{ store.lower() }}">
+                        {% if store == 'ElectroStore' %}<i class="fas fa-bolt"></i>
+                        {% elif store == 'QuickShop' %}<i class="fas fa-shopping-cart"></i>
+                        {% elif store == 'GadgetHub' %}<i class="fas fa-cube"></i>
+                        {% endif %}
+                        {{ store }}
+                    </div>
+
+                    {% if price %}
+                    <div class="store-price {% if is_best %}best-price{% else %}not-best{% endif %}">
+                        ₹{{ "{:,}".format(price) }}
+                        {% if is_best %}<span class="best-tag">BEST</span>{% endif %}
+                    </div>
+                    <div class="store-offer">
+                        {% if store_data and store_data.offer %}
+                        <span class="offer-chip"><i class="fas fa-tag"></i> {{ store_data.offer }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="store-stock">
+                        {% if store_data %}
+                            {% if store_data.stock == 'In Stock' %}
+                            <span class="stock-in"><i class="fas fa-check-circle"></i> In Stock</span>
+                            {% elif store_data.stock == 'Out of Stock' %}
+                            <span class="stock-out"><i class="fas fa-times-circle"></i> Out of Stock</span>
+                            {% else %}
+                            <span class="stock-low"><i class="fas fa-exclamation-circle"></i> {{ store_data.stock }}</span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="store-price not-best">—</div>
+                    <div class="store-offer"><span class="offer-chip">Not Available</span></div>
+                    <div class="store-stock"><span class="stock-out">Unavailable</span></div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Savings Bar -->
+            <div class="savings-bar">
+                {% set prices = product.store_prices.values() | list %}
+                {% if prices | length > 1 %}
+                {% set max_price = prices | max %}
+                {% set savings = max_price - product.best_price %}
+                <div class="savings-text">
+                    💰 Best deal at <strong>{{ product.best_store }}</strong> —
+                    <span class="savings-amount">Save ₹{{ "{:,}".format(savings) }}</span> vs highest price
+                </div>
+                {% else %}
+                <div class="savings-text">Available at <strong>{{ product.best_store }}</strong></div>
+                {% endif %}
+                <a href="http://localhost:{% if product.best_store == 'ElectroStore' %}8081{% elif product.best_store == 'QuickShop' %}8082{% else %}8083{% endif %}" target="_blank" class="btn-visit">
+                    Visit {{ product.best_store }} <i class="fas fa-external-link-alt"></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Search History -->
+{% if show_history %}
+<div class="history-section">
+    <div class="container">
+        <h3 class="mb-4" style="color:#00f5a0;"><i class="fas fa-history"></i> Recent Searches</h3>
+        {% if history %}
+        {% for h in history %}
+        <div class="history-card">
+            <div>
+                <div class="history-query"><i class="fas fa-search" style="color:#555; margin-right:8px;"></i>{{ h.search_query }}</div>
+                <div class="history-meta">{{ h.searched_at }} &nbsp;·&nbsp; {{ h.product_name }}</div>
+            </div>
+            <div class="text-end">
+                <div class="history-best">{{ h.best_store }}</div>
+                <div style="color:#00f5a0; font-size:1.1rem; font-weight:800;">₹{{ "{:,}".format(h.best_price) }}</div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon"><i class="fas fa-history"></i></div>
+            <h3 style="color:#333;">No search history yet</h3>
+            <p style="color:#222;">Start searching to see your history here</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- How it Works (shown on homepage) -->
+{% if not products and not error and not show_history %}
+<div class="how-section">
+    <div class="container">
+        <h2 class="text-center mb-5" style="font-weight:800;">How <span style="color:#00f5a0;">PriceScout</span> Works</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h5>Search Any Product</h5>
+                    <p>Type any product name — iPhone, MacBook, Samsung TV, Daikin AC — and hit Scout Deals.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h5>We Scout All Stores</h5>
+                    <p>PriceScout instantly queries ElectroStore, QuickShop and GadgetHub APIs in real time.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h5>Get the Best Deal</h5>
+                    <p>We compare all prices, highlight the cheapest store, and show you exactly how much you save.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Store Cards -->
+        <div class="row g-4 mt-4">
+            <div class="col-md-4">
+                <div class="step-card" style="border-color:#00d4ff33;">
+                    <i class="fas fa-bolt" style="font-size:2rem; color:#00d4ff; margin-bottom:15px;"></i>
+                    <h5 style="color:#00d4ff;">ElectroStore</h5>
+                    <p>Premium electronics with genuine warranty and exclusive member offers.</p>
+                    <a href="http://localhost:8081" target="_blank" style="color:#00d4ff; font-size:0.85rem;">Visit Store →</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card" style="border-color:#2874f033;">
+                    <i class="fas fa-shopping-cart" style="font-size:2rem; color:#2874f0; margin-bottom:15px;"></i>
+                    <h5 style="color:#2874f0;">QuickShop</h5>
+                    <p>Flash sales and limited time deals with the lowest prices on mobiles.</p>
+                    <a href="http://localhost:8082" target="_blank" style="color:#2874f0; font-size:0.85rem;">Visit Store →</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card" style="border-color:#ff990033;">
+                    <i class="fas fa-cube" style="font-size:2rem; color:#ff9900; margin-bottom:15px;"></i>
+                    <h5 style="color:#ff9900;">GadgetHub</h5>
+                    <p>Trusted store with fast delivery, easy returns and best laptop deals.</p>
+                    <a href="http://localhost:8083" target="_blank" style="color:#ff9900; font-size:0.85rem;">Visit Store →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <p style="font-size:1.2rem; font-weight:800; margin-bottom:10px;">
+            <span>Price</span>Scout<span>.</span>
+        </p>
+        <div class="store-links mb-3">
+            <a href="http://localhost:8081" target="_blank">ElectroStore</a>
+            <a href="http://localhost:8082" target="_blank">QuickShop</a>
+            <a href="http://localhost:8083" target="_blank">GadgetHub</a>
+            <a href="/history">Search History</a>
+        </div>
+        <p>© 2025 PriceScout — Compare Smarter, Buy Better.</p>
+    </div>
+</footer>
+
+</body>
+</html>

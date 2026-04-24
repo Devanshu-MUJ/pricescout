@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-PriceScoutApplication<comparator>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.pricescout.comparator.PriceScoutApplication",
+            "projectName": "comparator",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
